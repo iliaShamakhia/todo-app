@@ -1,0 +1,36 @@
+﻿@model IEnumerable<TodoEntry>
+
+<div class="ms-2 me-auto">
+    <h2>@ViewBag.ListName</h2>
+    <p>@Model.ToList().Count Tasks</p>
+</div>
+<hr />
+<div>
+    <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Index">Back</a>
+    <a class="btn btn-success" asp-controller="TodoEntry" asp-action="Create" asp-route-listId="@ViewBag.ListId">Add Todo</a>
+    <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="HideShowCompleted" asp-route-listId="@ViewBag.ListId" asp-route-hidden="@(ViewBag.Hidden==null?true:ViewBag.Hidden)">Hide/Show Completed</a>
+    <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="ShowDueToday" asp-route-listId="@ViewBag.ListId" asp-route-all="@(ViewBag.All==null?false:ViewBag.All)">Show all due today</a>
+</div>
+<div>
+    
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <ul class="list-group">
+            @foreach (var todo in Model)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <input class="form-check-input me-1 todo" type="checkbox" id="@todo.Id" value="" checked="@(todo.Status == "Completed" ? true : false)">
+                        <a asp-controller="TodoEntry" asp-action="Details" asp-route-id="@todo.Id">@todo.Title</a>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@section Scripts{ 
+    <script src="~/js/markEntryCompleted.js"></script>
+}

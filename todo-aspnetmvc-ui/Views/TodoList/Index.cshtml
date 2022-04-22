@@ -1,0 +1,51 @@
+﻿@model IEnumerable<TodoList>
+@{ 
+    int count = 0;
+    foreach(var list in Model)
+    {
+        if(list.Entries != null)
+        {
+            foreach (var todo in list.Entries)
+            {
+                if (todo.DueDate.ToShortDateString() == DateTime.Now.ToShortDateString())
+                {
+                    count++;
+                }
+            }
+        }
+
+    }
+}
+<div class="ms-2 me-auto">
+    <h2>Hello</h2>
+    <p>Today you have @count Tasks</p>
+</div>
+<hr />
+<div>
+    <a class="btn btn-success" asp-controller="TodoList" asp-action="Create">Add List</a>
+    <a class="btn btn-primary" asp-controller="TodoList" asp-action="Index">Show All</a>
+</div>
+<div class="row">
+    <div class="col-md-6">
+            @foreach (var list in Model)
+            {
+                <div id=@("list"+list.Id)>
+                    <div class="ms-2 me-auto">
+                        <h2><a asp-controller="TodoEntry" asp-action="Index" asp-route-listId="@list.Id" class="fw-bold">@list.Name</a></h2>
+                        <p>@(list.Entries == null?0:list.Entries.Count) Tasks</p>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" asp-controller="TodoList" asp-action="Edit" asp-route-id="@list.Id">Edit</a>
+                        <a class="btn btn-danger" asp-controller="TodoList" asp-action="Delete" asp-route-id="@list.Id">Delete</a>
+                        <a class="btn btn-secondary hide" id="@list.Id" href="#">Hide</a>
+                        <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Copy" asp-route-name="@list.Name">Copy</a>
+                    </div>
+                </div>
+            }
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/hideList.js"></script>
+}
+
