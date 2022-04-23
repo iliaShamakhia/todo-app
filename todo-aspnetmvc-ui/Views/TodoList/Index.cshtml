@@ -29,7 +29,7 @@
     <div class="col-md-6">
             @foreach (var list in Model)
             {
-                <div id=@("list"+list.Id)>
+                <div class="list-box" id=@("list"+list.Id)>
                     <div class="ms-2 me-auto">
                         <h2><a asp-controller="TodoEntry" asp-action="Index" asp-route-listId="@list.Id" class="fw-bold">@list.Name</a></h2>
                         <p>@(list.Entries == null?0:list.Entries.Count) Tasks</p>
