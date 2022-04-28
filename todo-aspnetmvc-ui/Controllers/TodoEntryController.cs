@@ -7,33 +7,30 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using todo_aspnetmvc_ui.Models;
+using todo_aspnetmvc_ui.Models.Repo;
+using todo_domain_entities;
 
 namespace todo_aspnetmvc_ui.Controllers
 {
     public class TodoEntryController : Controller
     {
-        private readonly TodoListDbContext _context;
+        private readonly ITodoListRepo _repo;
 
-        public TodoEntryController(TodoListDbContext context)
+        public TodoEntryController(ITodoListRepo repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         public async Task<IActionResult> Index(int listId)
         {
-            var data = await _context.Entries
-                .Where(e => e.TodoListId == listId)
-                .ToListAsync();
+            var data = await _repo.GetEntriesByListId(listId);
 
             if(data == null)
             {
                 return NotFound();
             }
 
-            string listName = await _context.Lists
-                .Where(l => l.Id == listId)
-                .Select(l => l.Name)
-                .FirstOrDefaultAsync();
+            string listName = await _repo.GetListNameById(listId);
 
             ViewBag.ListName = listName;
             ViewBag.ListId = listId;
@@ -43,7 +40,7 @@ namespace todo_aspnetmvc_ui.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var todo = await _context.Entries.FindAsync(id);
+            var todo = await _repo.FindEntryById(id);
 
             if (todo == null)
             {
@@ -55,83 +52,73 @@ namespace todo_aspnetmvc_ui.Controllers
 
         public IActionResult Create(int listId)
         {
-            TodoEntry todo = new TodoEntry
+            TodoEntry entry = new TodoEntry
             {
                 TodoListId = listId
             };
 
-            return View(todo);
+            return View(entry);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(TodoEntry todo)
+        public async Task<IActionResult> Create(TodoEntry entry)
         {
             if (ModelState.IsValid)
             {
-                _context.Entries.Add(todo);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "TodoEntry", new {listId = todo.TodoListId });
+                _repo.AddEntry(entry);
+                await _repo.SaveChanges();
+                return RedirectToAction("Index", "TodoEntry", new {listId = entry.TodoListId });
             }
 
-            return View(todo);
+            return View(entry);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
+            var entry = await _repo.FindEntryById(id);
+
+            if (entry == null)
             {
                 return NotFound();
             }
 
-            var todo = await _context.Entries.FindAsync(id);
-
-            if (todo == null)
-            {
-                return NotFound();
-            }
-
-            return View(todo);
+            return View(entry);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(TodoEntry todo)
+        public async Task<IActionResult> Edit(TodoEntry entry)
         {
             if (ModelState.IsValid)
             {
-                _context.Update(todo);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "TodoEntry", new {id = todo.Id });
+                _repo.UpdateEntry(entry);
+                await _repo.SaveChanges();
+                return RedirectToAction("Details", "TodoEntry", new {id = entry.Id });
             }
 
-            return View(todo);
+            return View(entry);
         }
 
         public async Task<IActionResult> Delete(int id, int listId)
         {
-            var todo = await _context.Entries.FindAsync(id);
+            var entry = await _repo.FindEntryById(id);
 
-            if (todo == null)
+            if (entry == null)
             {
                 return NotFound();
             }
 
-            _context.Entries.Remove(todo);
-            await _context.SaveChangesAsync();
+            _repo.DeleteEntry(entry);
+            await _repo.SaveChanges();
 
             return RedirectToAction("Index", "TodoEntry", new {listId});
         }
 
         [HttpPost]
-        public async Task<IActionResult> MarkCompleted(int? id, bool value)
+        public async Task<IActionResult> MarkCompleted(int id, bool value)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var entry = await _repo.FindEntryById(id);
 
-            var todo = await _context.Entries.FindAsync(id);
-
-            if (todo == null)
+            if (entry == null)
             {
                 return NotFound();
             }
@@ -139,39 +126,34 @@ namespace todo_aspnetmvc_ui.Controllers
             {
                 if (value)
                 {
-                    todo.Status = "Completed";
+                    entry.Status = "Completed";
                 }
                 else
                 {
-                    todo.Status = "Not Started";
+                    entry.Status = "Not Started";
                 }
 
-                _context.Entries.Update(todo);
-                await _context.SaveChangesAsync();
+                _repo.UpdateEntry(entry);
+                await _repo.SaveChanges();
             }
 
-            var data = await _context.Entries
-                .Where(e => e.TodoListId == todo.TodoListId)
-                .ToListAsync();
+            var data = await _repo.GetEntriesByListId(entry.TodoListId);
 
             return View("Index", data);
         }
 
         public async Task<IActionResult> HideShowCompleted(int listId, bool hidden)
         {
-            var data = await _context.Entries
-                .Where(e => e.TodoListId == listId && e.Status != (hidden ? "Completed" : ""))
-                .ToListAsync();
-
-            if(data == null)
+            var entries = await _repo.GetEntriesByListId(listId);
+            
+            if(entries == null)
             {
                 return NotFound();
             }
 
-            string listName = await _context.Lists
-                .Where(l => l.Id == listId)
-                .Select(l => l.Name)
-                .FirstOrDefaultAsync();
+            var data = entries.Where(e => e.Status != (hidden ? "Completed" : ""));
+
+            string listName = await _repo.GetListNameById(listId);
 
             ViewBag.Hidden = !hidden;
             ViewBag.ListId = listId;
@@ -180,29 +162,26 @@ namespace todo_aspnetmvc_ui.Controllers
             return View("Index", data);
         }
 
-        public IActionResult ShowDueToday(int listId, bool all)
+        public async Task<IActionResult> ShowDueToday(int listId, bool all)
         {
             IEnumerable<TodoEntry> data = null;
             
             if (all)
             {
-                data = _context.Entries.Where(e => e.TodoListId == listId);
+                data = await _repo.GetEntriesByListId(listId);
             }
             else
             {
-                data = _context.Entries.AsEnumerable()
-                    .Where(e => e.TodoListId == listId && e.DueDate.ToShortDateString() == DateTime.Now.ToShortDateString());
+                var entries = await _repo.GetEntriesByListId(listId);
+                data = entries.Where(e => e.DueDate.ToShortDateString() == DateTime.Now.ToShortDateString());
             }
 
             if(data == null)
             {
                 return NotFound();
             }
-            
-            string listName = _context.Lists
-                .Where(l => l.Id == listId)
-                .Select(l => l.Name)
-                .FirstOrDefault();
+
+            string listName = await _repo.GetListNameById(listId);
 
             ViewBag.ListId = listId;
             ViewBag.ListName = listName;

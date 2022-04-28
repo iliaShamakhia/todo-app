@@ -23,11 +23,13 @@
 <hr />
 <div>
     <a class="btn btn-success" asp-controller="TodoList" asp-action="Create">Add List</a>
-    <a class="btn btn-primary" asp-controller="TodoList" asp-action="Index">Show All</a>
+    <a class="btn btn-primary" asp-controller="TodoList" asp-action="Unhide">Show All</a>
 </div>
 <div class="row">
     <div class="col-md-6">
-            @foreach (var list in Model)
+        @foreach (var list in Model)
+        {
+            if (!list.Hidden)
             {
                 <div class="list-box" id=@("list"+list.Id)>
                     <div class="ms-2 me-auto">
@@ -37,15 +39,12 @@
                     <div>
                         <a class="btn btn-primary" asp-controller="TodoList" asp-action="Edit" asp-route-id="@list.Id">Edit</a>
                         <a class="btn btn-danger" asp-controller="TodoList" asp-action="Delete" asp-route-id="@list.Id">Delete</a>
-                        <a class="btn btn-secondary hide" id="@list.Id" href="#">Hide</a>
+                        <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Hide" asp-route-id="@list.Id">Hide</a>
                         <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Copy" asp-route-name="@list.Name">Copy</a>
                     </div>
                 </div>
             }
+        }
     </div>
 </div>
-
-@section Scripts{
-    <script src="~/js/hideList.js"></script>
-}
 

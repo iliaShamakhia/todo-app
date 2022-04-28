@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using todo_aspnetmvc_ui.Models;
+using todo_aspnetmvc_ui.Models.Repo;
 
 namespace todo_aspnetmvc_ui
 {
@@ -31,6 +32,7 @@ namespace todo_aspnetmvc_ui
                 opts.UseSqlServer(Configuration.GetConnectionString("TodoListConnectionString"));
             });
 
+            services.AddScoped<ITodoListRepo, TodoListRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

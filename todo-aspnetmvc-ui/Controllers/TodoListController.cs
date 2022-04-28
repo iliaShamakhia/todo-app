@@ -7,25 +7,27 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using todo_aspnetmvc_ui.Models;
+using todo_aspnetmvc_ui.Models.Repo;
+using todo_domain_entities;
 
 namespace todo_aspnetmvc_ui.Controllers
 {
     public class TodoListController : Controller
     {
-        private readonly TodoListDbContext _context;
+        private readonly ITodoListRepo _repo;
 
-        public TodoListController(TodoListDbContext context)
+        public TodoListController(ITodoListRepo repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         public IActionResult Index()
         {
             List<TodoList> data = new List<TodoList>();
 
-            foreach(var list in _context.Lists)
+            foreach(var list in _repo.GetLists())
             {
-                foreach(var todo in _context.Entries)
+                foreach(var todo in _repo.GetEntries())
                 {
                     if(todo.TodoListId == list.Id)
                     {
@@ -49,22 +51,17 @@ namespace todo_aspnetmvc_ui.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Lists.Add(list);
-                await _context.SaveChangesAsync();
+                _repo.AddList(list);
+                await _repo.SaveChanges();
                 return RedirectToAction("Index", "TodoList");
             }
 
             return View(list);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var list = await _context.Lists.FindAsync(id);
+            var list = await _repo.FindList(id);
 
             if (list == null)
             {
@@ -84,8 +81,8 @@ namespace todo_aspnetmvc_ui.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Update(list);
-                await _context.SaveChangesAsync();
+                _repo.UpdateList(list);
+                await _repo.SaveChanges();
                 return RedirectToAction("Index", "TodoList");
             }
 
@@ -94,17 +91,42 @@ namespace todo_aspnetmvc_ui.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var list = await _context.Lists.FindAsync(id);
+            var list = await _repo.FindList(id);
 
             if(list == null)
             {
                 return NotFound();
             }
 
-            _context.Lists.Remove(list);
-            await _context.SaveChangesAsync();
+            _repo.DeleteList(list);
+            await _repo.SaveChanges();
             
             return RedirectToAction("Index", "TodoList");
+        }
+
+        public async Task<IActionResult> Hide(int id)
+        {
+            var list = await _repo.FindList(id);
+            list.Hidden = true;
+            _repo.UpdateList(list);
+            await _repo.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Unhide()
+        {
+            var lists = _repo.GetLists();
+
+            foreach(var list in lists)
+            {
+                list.Hidden = false;
+            }
+
+            _repo.UpdateListsInRange(lists);
+            await _repo.SaveChanges();
+
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Copy(string name)
@@ -118,12 +140,12 @@ namespace todo_aspnetmvc_ui.Controllers
             string newName = name + "-copy";
             newList.Name = newName;
 
-            _context.Lists.Add(newList);
-            await _context.SaveChangesAsync();
+            _repo.AddList(newList);
+            await _repo.SaveChanges();
 
-            var oldId = _context.Lists.Where(l => l.Name == name).Select(l => l.Id).FirstOrDefault();
-            var newId = _context.Lists.Where(l => l.Name == newName).Select(l => l.Id).FirstOrDefault();
-            var entries = _context.Entries.Where(e => e.TodoListId == oldId);
+            var oldId = _repo.GetListIdByName(name);
+            var newId = _repo.GetListIdByName(newName);
+            var entries = await _repo.GetEntriesByListId(oldId);
 
             foreach (var entry in entries)
             {
@@ -134,10 +156,11 @@ namespace todo_aspnetmvc_ui.Controllers
                 newEntry.CreationDate = entry.CreationDate;
                 newEntry.Status = entry.Status;
                 newEntry.TodoListId = newId;
-                _context.Entries.Add(newEntry);
+
+                _repo.AddEntry(newEntry);
             }
 
-            await _context.SaveChangesAsync();
+            await _repo.SaveChanges();
 
             return RedirectToAction("Index");
         }
