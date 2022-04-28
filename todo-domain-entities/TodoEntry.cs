@@ -1,23 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace todo_domain_entities
 {
-    class TodoEntry
+    public class TodoEntry
     {
+        [Key]
         public int Id { get; set; }
 
+        [Required]
+        [MinLength(3, ErrorMessage = "Title must be at least 3 characters long")]
         public string Title { get; set; }
 
+        [Required]
+        [MinLength(10, ErrorMessage = "Description should be at least 10 characters long")]
         public string Description { get; set; }
 
-        public DateTime DueDate { get; set; }
+        [Required]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
+        public DateTime DueDate { get; set; } = DateTime.Now;
 
-        public DateTime CreationDate { get; set; }
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
+        public DateTime CreationDate { get; set; } = DateTime.Now;
 
-        public Status TodoStatus { get; set; }
+        public string Status { get; set; }
 
-        public TodoList TodoList { get; set; }
+        public int TodoListId { get; set; }
     }
 }
