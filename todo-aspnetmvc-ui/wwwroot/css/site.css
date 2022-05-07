@@ -1,17 +1,38 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+.boxes {
+  margin: auto;
+  padding: 50px;
+  background: #484848;
+}
+
+
+.todo-box{
+    display:flex;
+    flex-direction:column;
+}
+
 a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
 }
 
 /* Provide sufficient contrast against white background */
-/*a {
-  color: #fff;
-  text-decoration:none;
-}*/
+a{
+  text-decoration:none !important;
+}
+
+.button-group{
+    display:flex;
+    flex-direction: column;
+    justify-content:space-between;
+}
+
+.list-item-buttons{
+    margin:10px;
+}
 
 .list-box{
     border:1px solid gray;

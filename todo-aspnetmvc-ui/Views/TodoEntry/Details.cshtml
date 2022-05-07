@@ -1,14 +1,19 @@
 ﻿@model TodoEntry
 
-    <div class="row">
-        <div class="col-md-6">
-            <h3>@Model.Title</h3>
-            <h4>@Model.Status</h4>
-            <h6>Due Date: @Model.DueDate.ToShortDateString()</h6>
-            <h6>Created at: @Model.CreationDate.ToShortDateString()</h6>
-            <p>@Model.Description</p>
-            <a class="btn btn-secondary" asp-controller="TodoEntry" asp-action="Index" asp-route-listId="@Model.TodoListId">Back</a>
-            <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-            <a class="btn btn-danger" asp-controller="TodoEntry" asp-action="Delete" asp-route-id="@Model.Id" asp-route-listId="@Model.TodoListId">Delete</a>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">@Model.Title</h5>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Status</h5>
+                <p><strong>Created at: </strong>@Model.CreationDate.ToShortDateString()</p>
+                <p><strong>Due Date: </strong>@Model.DueDate.ToShortDateString()</p>
+                <p><strong>Description: </strong>@Model.Description</p>
+                <p><strong>Notes: </strong>@(Model.Notes != null?Model.Notes:"No additional notes")</p>
+                <a class="btn btn-secondary" asp-controller="TodoEntry" asp-action="Index" asp-route-listId="@Model.TodoListId">Back</a>
+                <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                <a class="btn btn-danger" asp-controller="TodoEntry" asp-action="Delete" asp-route-id="@Model.Id" asp-route-listId="@Model.TodoListId">Delete</a>
+            </div>
         </div>
     </div>
+</div>

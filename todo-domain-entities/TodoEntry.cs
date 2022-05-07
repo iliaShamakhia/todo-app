@@ -28,6 +28,8 @@ namespace todo_domain_entities
 
         public string Status { get; set; }
 
+        public string Notes { get; set; }
+
         public int TodoListId { get; set; }
     }
 }

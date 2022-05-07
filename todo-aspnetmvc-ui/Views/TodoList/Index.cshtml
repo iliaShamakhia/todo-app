@@ -13,7 +13,6 @@
                 }
             }
         }
-
     }
 }
 <div class="ms-2 me-auto">
@@ -31,12 +30,12 @@
         {
             if (!list.Hidden)
             {
-                <div class="list-box" id=@("list"+list.Id)>
-                    <div class="ms-2 me-auto">
+                <div class="card border-secondary mb-3" style="max-width: 18rem;margin-top:10px;">
+                    <div class="card-header">@(list.Entries == null?0:list.Entries.Count) Tasks</div>
+                    <div class="card-body text-secondary">
                         <h2><a asp-controller="TodoEntry" asp-action="Index" asp-route-listId="@list.Id" class="fw-bold">@list.Name</a></h2>
-                        <p>@(list.Entries == null?0:list.Entries.Count) Tasks</p>
                     </div>
-                    <div>
+                    <div class="list-item-buttons">
                         <a class="btn btn-primary" asp-controller="TodoList" asp-action="Edit" asp-route-id="@list.Id">Edit</a>
                         <a class="btn btn-danger" asp-controller="TodoList" asp-action="Delete" asp-route-id="@list.Id">Delete</a>
                         <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Hide" asp-route-id="@list.Id">Hide</a>

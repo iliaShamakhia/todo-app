@@ -1,32 +1,34 @@
 ﻿@model IEnumerable<TodoEntry>
 
-<div class="ms-2 me-auto">
-    <h2>@ViewBag.ListName</h2>
-    <p>@Model.ToList().Count Tasks</p>
-</div>
-<hr />
-<div>
-    <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Index">Back</a>
-    <a class="btn btn-success" asp-controller="TodoEntry" asp-action="Create" asp-route-listId="@ViewBag.ListId">Add Todo</a>
-    <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="HideShowCompleted" asp-route-listId="@ViewBag.ListId" asp-route-hidden="@(ViewBag.Hidden==null?true:ViewBag.Hidden)">Hide/Show Completed</a>
-    <a class="btn btn-primary" asp-controller="TodoEntry" asp-action="ShowDueToday" asp-route-listId="@ViewBag.ListId" asp-route-all="@(ViewBag.All==null?false:ViewBag.All)">Show all due today</a>
-</div>
 <div class="row">
     <div class="col-md-6">
-        <ul class="list-group">
-            @foreach (var todo in Model)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-start list-item">
-                    <div class="ms-2 me-auto">
-                        <input class="form-check-input me-1 todo" type="checkbox" id="@todo.Id" value="" checked="@(todo.Status == "Completed" ? true : false)">
-                        <a asp-controller="TodoEntry" asp-action="Details" asp-route-id="@todo.Id">@todo.Title</a>
-                    </div>
-                </li>
-            }
-        </ul>
+        <div class="card" style="width: 18rem;">
+            <h5 class="card-header">@ViewBag.ListName @Model.ToList().Count Tasks</h5>
+            <div class="card-body" style="width: 18rem; display:flex; flex-direction:row; justify-content:space-between;">
+                <a class="btn btn-secondary" asp-controller="TodoList" asp-action="Index">Back</a>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        Menu
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" asp-controller="TodoEntry" asp-action="Create" asp-route-listId="@ViewBag.ListId">Add Todo</a></li>
+                        <li><a class="dropdown-item" asp-controller="TodoEntry" asp-action="HideShowCompleted" asp-route-listId="@ViewBag.ListId" asp-route-hidden="@(ViewBag.Hidden==null?true:ViewBag.Hidden)">Hide Completed</a></li>
+                        <li><a class="dropdown-item" asp-controller="TodoEntry" asp-action="ShowDueToday" asp-route-listId="@ViewBag.ListId" asp-route-all="@(ViewBag.All==null?false:ViewBag.All)">Today's Tasks</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                @foreach (var todo in Model)
+                {
+                    <input class="todo" type="checkbox" id="@todo.Id" value="" checked="@(todo.Status == "Completed" ? true : false)" />
+                    <a asp-controller="TodoEntry" asp-action="Details" asp-route-id="@todo.Id">@todo.Title</a>
+                    <br>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
-@section Scripts{ 
+@section Scripts{
     <script src="~/js/markEntryCompleted.js"></script>
 }
